@@ -7,9 +7,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class TodoSqlite {
+public class TodoSqlite implements AutoCloseable, TodoRepository {
+
     private static final Logger logger = Logger.getLogger(TodoSqlite.class.getName());
     private final Connection connection;
     private final PreparedStatement stmtGetAllTodos;
@@ -20,6 +22,7 @@ public class TodoSqlite {
         return new TodoSqlite(path);
     }
 
+    @Override
     public void close() throws SQLException {
         connection.close();
         logger.info("Connection to SQLite has been closed.");
@@ -32,10 +35,12 @@ public class TodoSqlite {
             .execute("CREATE TABLE IF NOT EXISTS todos (id TEXT PRIMARY KEY, title TEXT, completed BOOLEAN)");
         stmtGetAllTodos = connection.prepareStatement("SELECT * FROM todos");
         stmtGetTodoById = connection.prepareStatement("SELECT * FROM todos WHERE id = ?");
-        stmtInsertTodo = connection.prepareStatement("INSERT INTO todos (id, title, completed) VALUES (?, ?, ?)");
+        stmtInsertTodo = connection.prepareStatement("INSERT OR REPLACE INTO todos (id, title, completed) VALUES (?, ?, ?)");
     }
 
+    @Override
     public List<Todo> getAllTodos() throws SQLException {
+        logger.log(Level.INFO, "Getting all todos");
         try (var resultSet = stmtGetAllTodos.executeQuery()) {
             var todos = new ArrayList<Todo>();
             while (resultSet.next()) {
@@ -49,7 +54,9 @@ public class TodoSqlite {
         }
     }
 
+    @Override
     public Optional<Todo> getTodoById(String id) throws SQLException {
+        logger.log(Level.INFO, "Getting todo by id {0}", id);
         stmtGetTodoById.setString(1, id);
         try (var resultSet = stmtGetTodoById.executeQuery()) {
             if (resultSet.next()) {
@@ -63,7 +70,9 @@ public class TodoSqlite {
         return Optional.empty();
     }
 
+    @Override
     public void insertTodo(Todo todo) throws SQLException {
+        logger.log(Level.INFO, "Inserting todo {0}", todo);
         stmtInsertTodo.setString(1, todo.id());
         stmtInsertTodo.setString(2, todo.title());
         stmtInsertTodo.setBoolean(3, todo.completed());
