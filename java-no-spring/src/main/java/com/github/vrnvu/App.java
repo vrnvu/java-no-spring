@@ -6,11 +6,12 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.vrnvu.todos.TodoHandler;
+import com.github.vrnvu.todos.TodoRepository;
+import com.github.vrnvu.todos.TodoService;
 import com.sun.net.httpserver.HttpServer;
 
-/**
- * Hello world!
- */
 public class App {
     private static final Logger logger = Logger.getLogger(App.class.getName());
 
@@ -22,11 +23,7 @@ public class App {
         // server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
         server.setExecutor(Executors.newWorkStealingPool());
 
-        server.createContext("/", (exchange) -> {
-            exchange.sendResponseHeaders(200, 0);
-            exchange.getResponseBody().write("Hello World!".getBytes());
-            exchange.getResponseBody().close();
-        });
+        server.createContext("/todos", new TodoHandler(new ObjectMapper(), new TodoService(new TodoRepository())));
         logger.log(Level.INFO, "Server started on port {0}", port);
         server.start();
     }
