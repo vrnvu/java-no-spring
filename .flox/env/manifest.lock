@@ -1,0 +1,143 @@
+{
+  "lockfile-version": 1,
+  "manifest": {
+    "version": 1,
+    "install": {
+      "maven": {
+        "pkg-path": "maven"
+      }
+    },
+    "hook": {},
+    "profile": {},
+    "options": {
+      "systems": [
+        "aarch64-darwin",
+        "aarch64-linux",
+        "x86_64-darwin",
+        "x86_64-linux"
+      ],
+      "allow": {
+        "licenses": []
+      },
+      "semver": {}
+    }
+  },
+  "packages": [
+    {
+      "attr_path": "maven",
+      "broken": false,
+      "derivation": "/nix/store/b1gvwji2bjydwsid4a2x4aca31y25b6m-maven-3.9.9.drv",
+      "description": "Build automation tool (used primarily for Java projects)",
+      "install_id": "maven",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=9abb87b552b7f55ac8916b6fc9e5cb486656a2f3",
+      "name": "maven-3.9.9",
+      "pname": "maven",
+      "rev": "9abb87b552b7f55ac8916b6fc9e5cb486656a2f3",
+      "rev_count": 737779,
+      "rev_date": "2025-01-13T20:09:17Z",
+      "scrape_date": "2025-01-15T00:14:40Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.9.9",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/skgavbzs2qnkf4sqr9fzdgpwym6cyz6w-maven-3.9.9"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "maven",
+      "broken": false,
+      "derivation": "/nix/store/8c74rmzazvax83f0737rgdfgqz2598kn-maven-3.9.9.drv",
+      "description": "Build automation tool (used primarily for Java projects)",
+      "install_id": "maven",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=9abb87b552b7f55ac8916b6fc9e5cb486656a2f3",
+      "name": "maven-3.9.9",
+      "pname": "maven",
+      "rev": "9abb87b552b7f55ac8916b6fc9e5cb486656a2f3",
+      "rev_count": 737779,
+      "rev_date": "2025-01-13T20:09:17Z",
+      "scrape_date": "2025-01-15T00:14:40Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.9.9",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/d2d8y3d3v0bghv6v59m6ln3m154sp93d-maven-3.9.9"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "maven",
+      "broken": false,
+      "derivation": "/nix/store/3blvrrsa4h60hs8hd9m9dwm65107xzvq-maven-3.9.9.drv",
+      "description": "Build automation tool (used primarily for Java projects)",
+      "install_id": "maven",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=9abb87b552b7f55ac8916b6fc9e5cb486656a2f3",
+      "name": "maven-3.9.9",
+      "pname": "maven",
+      "rev": "9abb87b552b7f55ac8916b6fc9e5cb486656a2f3",
+      "rev_count": 737779,
+      "rev_date": "2025-01-13T20:09:17Z",
+      "scrape_date": "2025-01-15T00:14:40Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.9.9",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/kfg5rnrxx0a6xcfkcsvj4rmangcfg01s-maven-3.9.9"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "maven",
+      "broken": false,
+      "derivation": "/nix/store/96k1idsqdwfbmc57i68zxb9md02nasbc-maven-3.9.9.drv",
+      "description": "Build automation tool (used primarily for Java projects)",
+      "install_id": "maven",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=9abb87b552b7f55ac8916b6fc9e5cb486656a2f3",
+      "name": "maven-3.9.9",
+      "pname": "maven",
+      "rev": "9abb87b552b7f55ac8916b6fc9e5cb486656a2f3",
+      "rev_count": 737779,
+      "rev_date": "2025-01-13T20:09:17Z",
+      "scrape_date": "2025-01-15T00:14:40Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.9.9",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/dqv2ipvqa1ngydsgv0bcqxfr4xdq6zi6-maven-3.9.9"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    }
+  ]
+}
