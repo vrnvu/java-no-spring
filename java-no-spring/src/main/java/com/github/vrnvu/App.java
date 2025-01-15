@@ -23,7 +23,10 @@ public class App {
         // server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
         server.setExecutor(Executors.newWorkStealingPool());
 
-        server.createContext("/todos", new TodoHandler(new ObjectMapper(), new TodoService(new TodoRepository())));
+        server.createContext("/todos", new TodoHandler(
+            new ObjectMapper(),
+            new TodoService(new TodoRepository())
+        ));
         logger.log(Level.INFO, "Server started on port {0}", port);
         server.start();
     }
