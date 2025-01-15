@@ -2,6 +2,7 @@ package com.github.vrnvu;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,6 +17,11 @@ public class App {
     public static void main(String[] args) throws IOException {
         var port = 8080;
         var server = HttpServer.create(new InetSocketAddress(port), 0);
+
+        // virtual threads
+        // server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
+        server.setExecutor(Executors.newWorkStealingPool());
+
         server.createContext("/", (exchange) -> {
             exchange.sendResponseHeaders(200, 0);
             exchange.getResponseBody().write("Hello World!".getBytes());
