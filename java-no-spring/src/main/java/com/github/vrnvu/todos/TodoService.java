@@ -27,9 +27,11 @@ public class TodoService {
     }
 
     private final TodoRepository todoRepository;
+    private final HttpClient client;
 
-    public TodoService(TodoRepository todoRepository) {
+    public TodoService(TodoRepository todoRepository, HttpClient client) {
         this.todoRepository = todoRepository;
+        this.client = client;
     }
 
     public void insertTodo(Todo todo) throws TodoException {
@@ -57,10 +59,6 @@ public class TodoService {
     }
 
     public List<Todo> fetchTodos(ObjectMapper objectMapper) throws TodoException {
-        HttpClient client = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
-                .build();
-
         HttpRequest request = HttpRequest.newBuilder()
                 .timeout(Duration.ofSeconds(10))
                 .header("Accept", "application/json")

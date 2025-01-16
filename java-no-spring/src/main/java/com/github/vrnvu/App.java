@@ -2,7 +2,9 @@ package com.github.vrnvu;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.http.HttpClient;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,10 +26,16 @@ public class App {
         // server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
         server.setExecutor(Executors.newWorkStealingPool());
 
+
+        HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
+
         server.createContext("/todos", new TodoHandler(
             new ObjectMapper(),
             new TodoService(
-                TodoSqlite.open("todos.db")
+                TodoSqlite.open("todos.db"),
+                client
             )
         ));
 

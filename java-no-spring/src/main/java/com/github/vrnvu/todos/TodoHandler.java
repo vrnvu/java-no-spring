@@ -77,7 +77,7 @@ public class TodoHandler implements HttpHandler {
     private void handleTodosFetch(HttpExchange exchange) throws IOException {
         try {
             var todos = todoService.fetchTodos(objectMapper);
-            var response = objectMapper.writeValueAsBytes(todos);
+        var response = objectMapper.writeValueAsBytes(todos);
             Handler.response(exchange, response);
         } catch (TodoService.TodoException e) {
             logger.log(Level.SEVERE, "Error fetching todos", e.getCause());
