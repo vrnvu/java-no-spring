@@ -43,6 +43,7 @@ public class TodoHandler implements HttpHandler {
         }
     }
 
+    // TODO AntPathMatcher
     private void handleGet(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
         if ("/todos/fetch".equals(path)) {
