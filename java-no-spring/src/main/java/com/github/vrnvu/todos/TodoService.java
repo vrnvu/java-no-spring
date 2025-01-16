@@ -26,12 +26,20 @@ public class TodoService {
         }
     }
 
+    public record Configuration(
+        TodoRepository todoRepository,
+        HttpClient client,
+        URI fetchTodosUri
+    ) {}
+
     private final TodoRepository todoRepository;
     private final HttpClient client;
+    private final URI fetchTodosUri;
 
-    public TodoService(TodoRepository todoRepository, HttpClient client) {
-        this.todoRepository = todoRepository;
-        this.client = client;
+    public TodoService(Configuration configuration) {
+        this.todoRepository = configuration.todoRepository;
+        this.client = configuration.client;
+        this.fetchTodosUri = configuration.fetchTodosUri;
     }
 
     public void insertTodo(Todo todo) throws TodoException {
@@ -62,7 +70,7 @@ public class TodoService {
         HttpRequest request = HttpRequest.newBuilder()
                 .timeout(Duration.ofSeconds(10))
                 .header("Accept", "application/json")
-                .uri(URI.create("http://localhost:8080/todos"))
+                .uri(fetchTodosUri)
                 .GET()
                 .build();
 

@@ -2,6 +2,7 @@ package com.github.vrnvu;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -34,8 +35,11 @@ public class App {
         server.createContext("/todos", new TodoHandler(
             new ObjectMapper(),
             new TodoService(
-                TodoSqlite.open("todos.db"),
-                client
+                new TodoService.Configuration(
+                    TodoSqlite.open("todos.db"),
+                    client,
+                    URI.create("http://localhost:8080/todos")
+                )
             )
         ));
 
