@@ -45,6 +45,11 @@ public class TodoHandler implements HttpHandler {
 
     private void handleGet(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
+        if ("/todos/fetch".equals(path)) {
+            handleTodosFetch(exchange);
+            return;
+        }
+
         if ("/todos".equals(path)) {
             handleGetTodos(exchange);
             return;
@@ -67,6 +72,17 @@ public class TodoHandler implements HttpHandler {
         }
 
         handleGetTodo(exchange, id);
+    }
+
+    private void handleTodosFetch(HttpExchange exchange) throws IOException {
+        try {
+            var todos = todoService.fetchTodos(objectMapper);
+            var response = objectMapper.writeValueAsBytes(todos);
+            Handler.response(exchange, response);
+        } catch (TodoService.TodoException e) {
+            logger.log(Level.SEVERE, "Error fetching todos", e.getCause());
+            Handler.statusCode(exchange, 500);
+        }
     }
 
     private void handleGetTodo(HttpExchange exchange, String id) throws IOException {
