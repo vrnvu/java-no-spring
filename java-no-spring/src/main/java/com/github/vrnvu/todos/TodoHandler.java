@@ -74,7 +74,7 @@ public class TodoHandler implements HttpHandler {
             switch (e.getType()) {
                 case NOT_FOUND -> Handler.statusCode(exchange, 404);
                 case SYSTEM_ERROR -> {
-                    logger.log(Level.SEVERE, "Error inserting todo", e.getCause());
+                    logger.log(Level.SEVERE, e.getMessage(), e.getCause());
                     Handler.statusCode(exchange, 500);
                 }
             }
@@ -122,7 +122,7 @@ public class TodoHandler implements HttpHandler {
             switch (e.getType()) {
                 case NOT_FOUND -> Handler.statusCode(exchange, 404);
                 case SYSTEM_ERROR -> {
-                    logger.log(Level.SEVERE, "Error fetching todos", e.getCause());
+                    logger.log(Level.SEVERE, e.getMessage(), e.getCause());
                     Handler.statusCode(exchange, 500);
                 }
             }
@@ -137,7 +137,7 @@ public class TodoHandler implements HttpHandler {
             switch (e.getType()) {
                 case NOT_FOUND -> Handler.statusCode(exchange, 404);
                 case SYSTEM_ERROR -> {
-                    logger.log(Level.SEVERE, "Error getting todo", e.getCause());
+                    logger.log(Level.SEVERE, e.getMessage(), e.getCause());
                     Handler.statusCode(exchange, 500);
                 }
             }
@@ -152,10 +152,10 @@ public class TodoHandler implements HttpHandler {
             var response = objectMapper.writeValueAsBytes(todo.get());
             Handler.response(exchange, response);
         } catch (JsonProcessingException e) {
-            logger.log(Level.SEVERE, "Error serializing todo", e);
+            logger.log(Level.SEVERE, e.getMessage(), e);
             Handler.statusCode(exchange, 500);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Error writing response", e);
+            logger.log(Level.SEVERE, e.getMessage(), e);
             Handler.statusCode(exchange, 500);
         }
     }
@@ -166,11 +166,11 @@ public class TodoHandler implements HttpHandler {
             todos = todoService.getTodos();
         } catch (TodoError e) {
             switch (e.getType()) {
-                            case SYSTEM_ERROR -> {
-                                logger.log(Level.SEVERE, "Error getting todos", e.getCause());
-                                Handler.statusCode(exchange, 500);
-                            }
-                            default -> throw new IllegalArgumentException("Unexpected value: " + e.getType());
+                case SYSTEM_ERROR -> {
+                    logger.log(Level.SEVERE, e.getMessage(), e.getCause());
+                    Handler.statusCode(exchange, 500);
+                }
+                default -> throw new IllegalArgumentException("Unexpected value: " + e.getType());
             }
         }
 
@@ -178,10 +178,10 @@ public class TodoHandler implements HttpHandler {
             var response = objectMapper.writeValueAsBytes(todos);
             Handler.response(exchange, response);
         } catch (JsonProcessingException e) {
-            logger.log(Level.SEVERE, "Error serializing todos", e);
+            logger.log(Level.SEVERE, e.getMessage(), e);
             Handler.statusCode(exchange, 500);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Error writing response", e);
+            logger.log(Level.SEVERE, e.getMessage(), e);
             Handler.statusCode(exchange, 500);
         }
     }
