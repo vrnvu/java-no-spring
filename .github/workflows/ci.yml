@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+  workflow_dispatch:
+
+concurrency:
+    group: '${{ github.workflow }}-${{ github.head_ref || github.ref }}'
+    cancel-in-progress: true
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Java
+              uses: actions/setup-java@v4
+              with:
+                distribution: 'corretto'
+                java-version: '21'
+
+            - name: Build with Maven
+              run: mvn -B package --file pom.xml
+
+            - name: Run tests
+              run: mvn test
+
+    integration-test:
+        name: integration-test
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Java
+              uses: actions/setup-java@v4
+              with:
+                distribution: 'corretto'
+                java-version: '21'
+
+            - name: Build application
+              run: mvn -B package --file pom.xml -DskipTests
+
+            - name: Start Java server
+              run: java -jar target/*.jar &
+              env:
+                PORT: 8080
+
+            - name: Wait for server to start
+              run: |
+                until curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/todos | grep -q "200"; do
+                  echo "Waiting for server..."
+                  sleep 1
+                done
+
+            - name: Run integration tests
+              run: ./scripts/integration-test.sh
+              env:
+                ENV: dev
+
+            - name: Stop Java server
+              run: pkill java
