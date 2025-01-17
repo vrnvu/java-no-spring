@@ -7,10 +7,6 @@ on:
     branches: [main]
   workflow_dispatch:
 
-concurrency:
-  group: '${{ github.workflow }}-${{ github.head_ref || github.ref }}'
-  cancel-in-progress: true
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -24,6 +20,13 @@ jobs:
           distribution: 'corretto'
           java-version: '21'
           cache: 'maven'
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - run: mvn clean test
 
   integration-test:
@@ -38,37 +41,33 @@ jobs:
           distribution: 'corretto'
           java-version: '21'
           cache: 'maven'
-      
-      # Build and start server with proper error handling
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: Build and start server
         run: |
           mvn clean package
-          java -jar target/*.jar &
+          java -jar target/*.jar > server.log 2>&1 &
           echo $! > server.pid
-          
-          # Wait for server to be ready
           for i in {1..30}; do
-            if curl -s http://localhost:8080/todos > /dev/null; then
+            if curl -s http://localhost:8080/todos; then
               echo "Server is ready"
               exit 0
             fi
-            sleep 1
+            echo "Waiting for server... attempt $i"
+            sleep 2
           done
-          
-          # If we get here, server failed to start
           echo "Server failed to start"
           cat server.log
           exit 1
-        env:
-          PORT: 8080
-
-      # Run tests
       - name: Run integration tests
         run: ../scripts/integration-test.sh
         env:
           ENV: dev
-
-      # Ensure server is stopped
       - name: Cleanup
         if: always()
         run: kill $(cat server.pid) || true
