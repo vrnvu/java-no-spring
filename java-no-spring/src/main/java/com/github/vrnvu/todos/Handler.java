@@ -23,8 +23,12 @@ public class Handler {
 
     public static void response(HttpExchange exchange, byte[] response) throws IOException {
         try (exchange) {
-            exchange.sendResponseHeaders(200, response.length);
-            exchange.getResponseBody().write(response);
+            if (response.length > 0) {
+                exchange.sendResponseHeaders(200, response.length);
+                exchange.getResponseBody().write(response);
+            } else {
+                exchange.sendResponseHeaders(204, 0);
+            }
         }
     }
 }

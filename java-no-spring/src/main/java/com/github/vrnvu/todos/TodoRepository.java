@@ -7,4 +7,5 @@ public interface TodoRepository {
     Result<Todo> getTodoById(String id);
     Result<Void> insertTodo(Todo todo);
     Result<Void> deleteTodoById(String id);
+    Result<Void> patchTodo(Todo todo);
 }

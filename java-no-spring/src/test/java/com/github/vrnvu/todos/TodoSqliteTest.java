@@ -44,5 +44,12 @@ public class TodoSqliteTest {
         assertEquals("1", todo.unwrap().id());
         assertEquals("Test", todo.unwrap().title());
         assertEquals(false, todo.unwrap().completed());
+
+        sqlite.patchTodo(new Todo("1", "Test2", null));
+        todo = sqlite.getTodoById("1");
+        assertTrue(todo.isOk());
+        assertEquals("1", todo.unwrap().id());
+        assertEquals("Test2", todo.unwrap().title());
+        assertEquals(false, todo.unwrap().completed());
     }
 }

@@ -71,5 +71,9 @@ public class TodoService {
     public Result<Void> deleteTodoById(String id) {
         return todoRepository.deleteTodoById(id);
     }
+
+    public Result<Void> patchTodo(Todo todo) {
+        return todoRepository.patchTodo(todo);
+    }
 }
 

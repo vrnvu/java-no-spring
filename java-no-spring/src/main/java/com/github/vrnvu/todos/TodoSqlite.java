@@ -20,6 +20,7 @@ public class TodoSqlite implements AutoCloseable, TodoRepository {
     private final PreparedStatement stmtGetTodoById;
     private final PreparedStatement stmtInsertTodo;
     private final PreparedStatement stmtDeleteTodoById;
+    private final PreparedStatement stmtUpdateTodo;
 
     public static TodoSqlite open(String path) throws SQLException {
         return new TodoSqlite(path);
@@ -40,6 +41,12 @@ public class TodoSqlite implements AutoCloseable, TodoRepository {
         stmtGetTodoById = connection.prepareStatement("SELECT * FROM todos WHERE id = ?");
         stmtInsertTodo = connection.prepareStatement("INSERT OR REPLACE INTO todos (id, title, completed) VALUES (?, ?, ?)");
         stmtDeleteTodoById = connection.prepareStatement("DELETE FROM todos WHERE id = ?");
+        stmtUpdateTodo = connection.prepareStatement(
+            "UPDATE todos SET " +
+            "title = COALESCE(?, title), " +
+            "completed = COALESCE(?, completed) " +
+            "WHERE id = ?"
+        );
     }
 
     @Override
@@ -120,5 +127,29 @@ public class TodoSqlite implements AutoCloseable, TodoRepository {
             lock.writeLock().unlock();
         }
         return Result.Ok.empty();
+    }
+
+    @Override
+    public Result<Void> patchTodo(Todo todo) {
+        lock.writeLock().lock();
+        try {
+            logger.log(Level.INFO, "Patching todo {0}", todo);
+            
+            stmtUpdateTodo.setObject(1, todo.title());
+            stmtUpdateTodo.setObject(2, todo.completed());
+            stmtUpdateTodo.setString(3, todo.id());
+            
+            int updated = stmtUpdateTodo.executeUpdate();
+            if (updated != 1) {
+                return new Result.Err<>(TodoError.NOT_FOUND);
+            }
+            return Result.Ok.empty();
+            
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error updating todo", e);
+            return new Result.Err<>(TodoError.SYSTEM_ERROR);
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 }
