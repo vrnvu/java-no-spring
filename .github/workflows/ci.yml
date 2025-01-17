@@ -26,11 +26,8 @@ jobs:
                 distribution: 'corretto'
                 java-version: '21'
 
-            - name: Build with Maven
-              run: mvn -B package --file pom.xml
-
             - name: Run tests
-              run: mvn test
+              run: mvn clean test
 
     integration-test:
         name: integration-test
@@ -45,11 +42,8 @@ jobs:
                 distribution: 'corretto'
                 java-version: '21'
 
-            - name: Build application
-              run: mvn -B package --file pom.xml -DskipTests
-
             - name: Start Java server
-              run: java -jar target/*.jar &
+              run: mvn clean compile exec:java -Dexec.mainClass="com.github.vrnvu.App" &
               env:
                 PORT: 8080
 
