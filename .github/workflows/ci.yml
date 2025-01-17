@@ -59,7 +59,7 @@ jobs:
 
             - name: Wait for server to start
               run: |
-                timeout=30
+                timeout=10
                 elapsed=0
                 while ! curl -s http://localhost:8080/todos > /dev/null; do
                   if [ $elapsed -ge $timeout ]; then
