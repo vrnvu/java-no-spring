@@ -43,11 +43,11 @@ check_json() {
 }
 
 echo "Create or Update Todo with ID 1"
-response_code=$(curl -v -X PUT $BASE_URL/todos/ \
+response_code=$(curl -s -X PUT $BASE_URL/todos/ \
      -H "Content-Type: application/json" \
      -d '{"id": 1, "title": "First Todo", "completed": false}' \
-     -w '%{http_code}\n' \
-     2>&1)
+     -w '%{http_code}' \
+     -o /dev/null)
 check_status "$response_code" 204
 
 echo "Create or Update Todo with ID 2"
