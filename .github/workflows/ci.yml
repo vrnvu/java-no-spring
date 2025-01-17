@@ -52,43 +52,20 @@ jobs:
 
             - name: Start Java server
               run: |
-                echo "Starting server..."
                 mvn clean package
-                nohup mvn exec:java -Dexec.mainClass="com.github.vrnvu.App" > server.log 2>&1 &
-                server_pid=$!
-                echo $server_pid > server.pid
-                sleep 10
-                if ! ps -p $server_pid > /dev/null; then
-                    echo "Server failed to start! Logs:"
-                    cat server.log
-                    exit 1
-                fi
-                echo "Server process is running"
+                java -jar target/*.jar > server.log 2>&1 &
               env:
                 PORT: 8080
 
             - name: Wait for server to start
               run: |
-                echo "Checking server status..."
-                ps aux | grep java
-                echo "Server logs:"
-                cat server.log
-                timeout=60
-                elapsed=0
-                until curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/todos | grep -q "200"; do
-                  if [ $elapsed -gt $timeout ]; then
-                    echo "Timeout waiting for server to start"
-                    cat server.log
-                    exit 1
+                for i in {1..12}; do
+                  if curl -s http://localhost:8080/todos > /dev/null; then
+                    echo "Server is up!"
+                    exit 0
                   fi
                   echo "Waiting for server..."
-                  if ! ps -p $(cat server.pid) > /dev/null; then
-                    echo "Server process died! Logs:"
-                    cat server.log
-                    exit 1
-                  fi
-                  sleep 5
-                  elapsed=$((elapsed+5))
+                  sleep 1
                 done
 
             - name: Run integration tests
