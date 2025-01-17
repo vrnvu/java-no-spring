@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.vrnvu.core.Handler;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -36,31 +35,32 @@ public class TodoHandler implements HttpHandler {
     private void handleDelete(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
         if (!path.startsWith("/todos/")) {
-            Handler.statusCode(exchange, 404);
+            Handler.exception(exchange, new TodoError.BadRequest());
             return;
         }
 
         String id = path.substring("/todos/".length());
         if (id.isEmpty()) {
-            Handler.statusCode(exchange, 404);
+            Handler.exception(exchange, new TodoError.BadRequest());
             return;
         }
 
         if (id.contains("/")) {
-            Handler.statusCode(exchange, 404);
+            Handler.exception(exchange, new TodoError.BadRequest());
             return;
         }
 
         try {
             todoService.deleteTodoById(id);
-            Handler.statusCode(exchange, 200);
+            Handler.response(exchange, new byte[0]);
         } catch (TodoError e) {
             switch (e.getType()) {
-                case NOT_FOUND -> Handler.statusCode(exchange, 404);
+                case NOT_FOUND -> Handler.exception(exchange, e);
                 case SYSTEM_ERROR -> {
                     logger.log(Level.SEVERE, "Error deleting todo", e.getCause());
-                    Handler.statusCode(exchange, 500);
+                    Handler.exception(exchange, e);
                 }
+                default -> throw new IllegalArgumentException("Unexpected value: " + e.getType());
             }
         }
     }
@@ -69,14 +69,15 @@ public class TodoHandler implements HttpHandler {
         var todo = objectMapper.readValue(exchange.getRequestBody(), Todo.class);
         try {
             todoService.insertTodo(todo);
-            Handler.statusCode(exchange, 200);
+            Handler.response(exchange, new byte[0]);
         } catch (TodoError e) {
             switch (e.getType()) {
-                case NOT_FOUND -> Handler.statusCode(exchange, 404);
+                case NOT_FOUND -> Handler.exception(exchange, e);
                 case SYSTEM_ERROR -> {
                     logger.log(Level.SEVERE, e.getMessage(), e.getCause());
-                    Handler.statusCode(exchange, 500);
+                    Handler.exception(exchange, e);
                 }
+                default -> throw new IllegalArgumentException("Unexpected value: " + e.getType());
             }
         }
     }
@@ -95,18 +96,18 @@ public class TodoHandler implements HttpHandler {
         }
 
         if (!path.startsWith("/todos/")) {
-            Handler.statusCode(exchange, 404);
+            Handler.exception(exchange, new TodoError.BadRequest());
             return;
         }
 
         String id = path.substring("/todos/".length());
         if (id.isEmpty()) {
-            Handler.statusCode(exchange, 404);
+            Handler.exception(exchange, new TodoError.BadRequest());
             return;
         }
 
         if (id.contains("/")) {
-            Handler.statusCode(exchange, 404);
+            Handler.exception(exchange, new TodoError.BadRequest());
             return;
         }
 
@@ -120,11 +121,12 @@ public class TodoHandler implements HttpHandler {
             Handler.response(exchange, response);
         } catch (TodoError e) {
             switch (e.getType()) {
-                case NOT_FOUND -> Handler.statusCode(exchange, 404);
+                case NOT_FOUND -> Handler.exception(exchange, e);
                 case SYSTEM_ERROR -> {
                     logger.log(Level.SEVERE, e.getMessage(), e.getCause());
-                    Handler.statusCode(exchange, 500);
+                    Handler.exception(exchange, e);
                 }
+                default -> throw new IllegalArgumentException("Unexpected value: " + e.getType());
             }
         }
     }
@@ -135,16 +137,17 @@ public class TodoHandler implements HttpHandler {
             todo = todoService.getTodo(id);
         } catch (TodoError e) {
             switch (e.getType()) {
-                case NOT_FOUND -> Handler.statusCode(exchange, 404);
+                case NOT_FOUND -> Handler.exception(exchange, e);
                 case SYSTEM_ERROR -> {
                     logger.log(Level.SEVERE, e.getMessage(), e.getCause());
-                    Handler.statusCode(exchange, 500);
+                    Handler.exception(exchange, e);
                 }
+                default -> throw new IllegalArgumentException("Unexpected value: " + e.getType());
             }
         }
 
         if (todo.isEmpty()) {
-            Handler.statusCode(exchange, 404);
+            Handler.exception(exchange, new TodoError.NotFound("Todo not found"));
             return;
         }
 
@@ -153,10 +156,10 @@ public class TodoHandler implements HttpHandler {
             Handler.response(exchange, response);
         } catch (JsonProcessingException e) {
             logger.log(Level.SEVERE, e.getMessage(), e);
-            Handler.statusCode(exchange, 500);
+            Handler.exception(exchange, new TodoError.SystemError("Failed to parse todo", e));
         } catch (IOException e) {
             logger.log(Level.SEVERE, e.getMessage(), e);
-            Handler.statusCode(exchange, 500);
+            Handler.exception(exchange, new TodoError.SystemError("Failed to parse todo", e));
         }
     }
 
@@ -168,7 +171,7 @@ public class TodoHandler implements HttpHandler {
             switch (e.getType()) {
                 case SYSTEM_ERROR -> {
                     logger.log(Level.SEVERE, e.getMessage(), e.getCause());
-                    Handler.statusCode(exchange, 500);
+                    Handler.exception(exchange, e);
                 }
                 default -> throw new IllegalArgumentException("Unexpected value: " + e.getType());
             }
@@ -179,10 +182,10 @@ public class TodoHandler implements HttpHandler {
             Handler.response(exchange, response);
         } catch (JsonProcessingException e) {
             logger.log(Level.SEVERE, e.getMessage(), e);
-            Handler.statusCode(exchange, 500);
+            Handler.exception(exchange, new TodoError.SystemError("Failed to parse todos", e));
         } catch (IOException e) {
             logger.log(Level.SEVERE, e.getMessage(), e);
-            Handler.statusCode(exchange, 500);
+            Handler.exception(exchange, new TodoError.SystemError("Failed to parse todos", e));
         }
     }
 }

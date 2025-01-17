@@ -1,9 +1,14 @@
 package com.github.vrnvu.todos;
 
-public sealed abstract class TodoError extends Exception permits TodoError.NotFound, TodoError.SystemError {
+public sealed abstract class TodoError extends Exception permits
+    TodoError.NotFound,
+    TodoError.SystemError,
+    TodoError.BadRequest {
+
     public enum Type {
         NOT_FOUND,
-        SYSTEM_ERROR
+        SYSTEM_ERROR,
+        BAD_REQUEST
     }
 
     private final Type type;
@@ -31,6 +36,12 @@ public sealed abstract class TodoError extends Exception permits TodoError.NotFo
     public static final class SystemError extends TodoError {
         public SystemError(String message, Throwable cause) {
             super(message, cause, Type.SYSTEM_ERROR);
+        }
+    }
+
+    public static final class BadRequest extends TodoError {
+        public BadRequest() {
+            super("", Type.BAD_REQUEST);
         }
     }
 }
