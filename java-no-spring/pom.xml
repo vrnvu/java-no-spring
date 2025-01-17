@@ -119,6 +119,7 @@
                                     <mainClass>com.github.vrnvu.App</mainClass>
                                 </transformer>
                             </transformers>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
                         </configuration>
                     </execution>
                 </executions>
