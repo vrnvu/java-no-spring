@@ -12,20 +12,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
       - name: Build and test
-        run: docker build --target build -t my-app-build -f Dockerfile .
+        working-directory: java-no-spring
+        run: mvn clean test
 
   integration-test:
     needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build Docker image
-        run: docker build -t my-app-image -f Dockerfile .
-      - name: Start server in Docker container
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Start server
+        working-directory: java-no-spring
         run: |
-          docker run -d --name my-app-container -p 8080:8080 my-app-image
-          for i in {1..10}; do
+          mvn clean compile exec:java -Dexec.mainClass="com.github.vrnvu.App" &
+          for i in {1..30}; do
             if curl -s http://localhost:8080/todos > /dev/null; then
               echo "Server is ready"
               exit 0
@@ -34,12 +44,9 @@ jobs:
             sleep 2
           done
           echo "Server failed to start"
-          docker logs my-app-container
           exit 1
       - name: Run integration tests
-        run: docker exec my-app-container /app/scripts/integration-test.sh
+        working-directory: java-no-spring
+        run: ../scripts/integration-test.sh
         env:
           ENV: dev
-      - name: Cleanup
-        if: always()
-        run: docker stop my-app-container && docker rm my-app-container || true
