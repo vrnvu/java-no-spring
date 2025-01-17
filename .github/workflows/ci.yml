@@ -10,49 +10,22 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: java-no-spring
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'corretto'
-          java-version: '21'
-          cache: 'maven'
-      - name: Cache Maven packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-      - run: mvn clean test
+      - name: Build Docker image
+        run: docker build -t my-app-image -f path/to/Dockerfile .
+      - name: Run tests in Docker container
+        run: docker run --rm my-app-image mvn clean test
 
   integration-test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: java-no-spring
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'corretto'
-          java-version: '21'
-          cache: 'maven'
-      - name: Cache Maven packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-      - name: Build and start server
+      - name: Build Docker image
+        run: docker build -t my-app-image -f path/to/Dockerfile .
+      - name: Start server in Docker container
         run: |
-          mvn clean package
-          java -jar target/*.jar > server.log 2>&1 &
-          echo $! > server.pid
+          docker run -d --name my-app-container -p 8080:8080 my-app-image
           for i in {1..30}; do
             if curl -s http://localhost:8080/todos; then
               echo "Server is ready"
@@ -62,12 +35,12 @@ jobs:
             sleep 2
           done
           echo "Server failed to start"
-          cat server.log
+          docker logs my-app-container
           exit 1
       - name: Run integration tests
-        run: ../scripts/integration-test.sh
+        run: docker exec my-app-container ../scripts/integration-test.sh
         env:
           ENV: dev
       - name: Cleanup
         if: always()
-        run: kill $(cat server.pid) || true
+        run: docker stop my-app-container && docker rm my-app-container || true
