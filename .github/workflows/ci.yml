@@ -12,18 +12,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build Docker image
+      
+      # Run tests in the build stage container
+      - name: Build and test
+        run: docker build --target build -t my-app-build -f Dockerfile .
+      
+      # Build the final image for integration tests
+      - name: Build final image
         run: docker build -t my-app-image -f Dockerfile .
-      - name: Run tests in Docker container
-        run: docker run --rm my-app-image mvn clean test
 
   integration-test:
     needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build Docker image
-        run: docker build -t my-app-image -f Dockerfile .
       - name: Start server in Docker container
         run: |
           docker run -d --name my-app-container -p 8080:8080 my-app-image
@@ -39,7 +41,7 @@ jobs:
           docker logs my-app-container
           exit 1
       - name: Run integration tests
-        run: docker exec my-app-container /scripts/integration-test.sh
+        run: docker exec my-app-container /app/scripts/integration-test.sh
         env:
           ENV: dev
       - name: Cleanup
