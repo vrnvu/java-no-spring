@@ -5,7 +5,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.sql.SQLException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -15,16 +14,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TodoService {
-
-    public static class TodoException extends Exception {
-        public TodoException(String message) {
-            super(message);
-        }
-
-        public TodoException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
 
     public record Configuration(
         TodoRepository todoRepository,
@@ -42,31 +31,19 @@ public class TodoService {
         this.fetchTodosUri = configuration.fetchTodosUri;
     }
 
-    public void insertTodo(Todo todo) throws TodoException {
-        try {
-            todoRepository.insertTodo(todo);
-        } catch (SQLException e) {
-            throw new TodoException("Failed to insert todo", e);
-        }
+    public void insertTodo(Todo todo) throws TodoError {
+        todoRepository.insertTodo(todo);
     }
 
-    public List<Todo> getTodos() throws TodoException {
-        try {
-            return todoRepository.getAllTodos();
-        } catch (SQLException e) {
-            throw new TodoException("Failed to get todos", e);
-        }
+    public List<Todo> getTodos() throws TodoError {
+        return todoRepository.getAllTodos();
     }
 
-    public Optional<Todo> getTodo(String id) throws TodoException {
-        try {
-            return todoRepository.getTodoById(id);
-        } catch (SQLException e) {
-            throw new TodoException("Failed to get todo", e);
-        }
+    public Optional<Todo> getTodo(String id) throws TodoError {
+        return todoRepository.getTodoById(id);
     }
 
-    public List<Todo> fetchTodos(ObjectMapper objectMapper) throws TodoException {
+    public List<Todo> fetchTodos(ObjectMapper objectMapper) throws TodoError {
         HttpRequest request = HttpRequest.newBuilder()
                 .timeout(Duration.ofSeconds(10))
                 .header("Accept", "application/json")
@@ -80,10 +57,14 @@ public class TodoService {
                 try {
                         return objectMapper.readValue(body, new TypeReference<List<Todo>>() {});
                     } catch (IOException e) {
-                        throw new CompletionException(new TodoException("Failed to parse todos", e));
+                        throw new CompletionException(new TodoError.SystemError("Failed to parse todos", e));
                     }
                 })
                 .join();
+    }
+
+    public void deleteTodoById(String id) throws TodoError {
+        todoRepository.deleteTodoById(id);
     }
 }
 

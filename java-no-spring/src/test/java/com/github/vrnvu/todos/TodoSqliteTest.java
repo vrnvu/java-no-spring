@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -26,7 +25,7 @@ public class TodoSqliteTest {
     }
 
     @Test
-    public void whenInsertingGetAllAndGetById() throws SQLException {
+    public void whenInsertingGetAllAndGetById() throws TodoError {
         var todos = sqlite.getAllTodos();
         assertTrue(todos.isEmpty());
 
