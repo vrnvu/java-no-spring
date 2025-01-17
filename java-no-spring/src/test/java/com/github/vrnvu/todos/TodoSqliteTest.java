@@ -25,21 +25,24 @@ public class TodoSqliteTest {
     }
 
     @Test
-    public void whenInsertingGetAllAndGetById() throws TodoError {
+    public void whenInsertingGetAllAndGetById() {
         var todos = sqlite.getAllTodos();
-        assertTrue(todos.isEmpty());
+        assertTrue(todos.isOk());
+        assertTrue(todos.unwrap().isEmpty());
 
         var todo = sqlite.getTodoById("1");
-        assertTrue(todo.isEmpty());
+        assertTrue(todo.isErr());
+        assertEquals(TodoError.NOT_FOUND, todo.unwrapErr());
 
         sqlite.insertTodo(new Todo("1", "Test", false));
         todos = sqlite.getAllTodos();
-        assertEquals(1, todos.size());
+        assertTrue(todos.isOk());
+        assertEquals(1, todos.unwrap().size());
 
         todo = sqlite.getTodoById("1");
-        assertTrue(todo.isPresent());
-        assertEquals("1", todo.get().id());
-        assertEquals("Test", todo.get().title());
-        assertEquals(false, todo.get().completed());
+        assertTrue(todo.isOk());
+        assertEquals("1", todo.unwrap().id());
+        assertEquals("Test", todo.unwrap().title());
+        assertEquals(false, todo.unwrap().completed());
     }
 }

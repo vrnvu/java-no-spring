@@ -7,7 +7,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletionException;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -31,19 +30,19 @@ public class TodoService {
         this.fetchTodosUri = configuration.fetchTodosUri;
     }
 
-    public void insertTodo(Todo todo) throws TodoError {
-        todoRepository.insertTodo(todo);
+    public Result<Void> insertTodo(Todo todo) {
+        return todoRepository.insertTodo(todo);
     }
 
-    public List<Todo> getTodos() throws TodoError {
+    public Result<List<Todo>> getTodos() {
         return todoRepository.getAllTodos();
     }
 
-    public Optional<Todo> getTodo(String id) throws TodoError {
+    public Result<Todo> getTodo(String id) {
         return todoRepository.getTodoById(id);
     }
 
-    public List<Todo> fetchTodos(ObjectMapper objectMapper) throws TodoError {
+    public Result<List<Todo>> fetchTodos(ObjectMapper objectMapper) {
         HttpRequest request = HttpRequest.newBuilder()
                 .timeout(Duration.ofSeconds(10))
                 .header("Accept", "application/json")
@@ -51,20 +50,26 @@ public class TodoService {
                 .GET()
                 .build();
 
-        return client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
+        List<Todo> todos;
+        try { 
+            todos = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
                 .thenApply(HttpResponse::body)
                 .thenApply(body -> {
                 try {
                         return objectMapper.readValue(body, new TypeReference<List<Todo>>() {});
                     } catch (IOException e) {
-                        throw new CompletionException(new TodoError.SystemError("Failed to parse todos", e));
+                        throw new CompletionException(e);
                     }
                 })
                 .join();
+        } catch (CompletionException e) {
+            return new Result.Err<>(TodoError.SYSTEM_ERROR);
+        }
+        return new Result.Ok<>(todos);
     }
 
-    public void deleteTodoById(String id) throws TodoError {
-        todoRepository.deleteTodoById(id);
+    public Result<Void> deleteTodoById(String id) {
+        return todoRepository.deleteTodoById(id);
     }
 }
 

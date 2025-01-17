@@ -6,7 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -44,7 +43,7 @@ public class TodoSqlite implements AutoCloseable, TodoRepository {
     }
 
     @Override
-    public List<Todo> getAllTodos() throws TodoError {
+    public Result<List<Todo>> getAllTodos() {
         lock.readLock().lock();
         logger.log(Level.INFO, "Getting all todos");
         try (var resultSet = stmtGetAllTodos.executeQuery()) {
@@ -56,37 +55,37 @@ public class TodoSqlite implements AutoCloseable, TodoRepository {
                     resultSet.getBoolean("completed"))
                 );
             }
-            return todos;
+            return new Result.Ok<>(todos);
         } catch (SQLException e) {
-            throw new TodoError.SystemError("Failed to get all todos", e);
+            return new Result.Err<>(TodoError.SYSTEM_ERROR);
         } finally {
             lock.readLock().unlock();
         }
     }
 
     @Override
-    public Optional<Todo> getTodoById(String id) throws TodoError.SystemError {
+    public Result<Todo> getTodoById(String id) {
         lock.readLock().lock();
         logger.log(Level.INFO, "Getting todo by id {0}", id);
         try (var resultSet = stmtGetTodoById.executeQuery()) {
             stmtGetTodoById.setString(1, id);
             if (resultSet.next()) {
-                return Optional.of(new Todo(
+                return new Result.Ok<>(new Todo(
                     resultSet.getString("id"),
                     resultSet.getString("title"),
                     resultSet.getBoolean("completed"))
                 );
             }
         } catch (SQLException e) {
-            throw new TodoError.SystemError("Failed to get todo by id", e);
+            return new Result.Err<>(TodoError.SYSTEM_ERROR);
         } finally {
             lock.readLock().unlock();
         }
-        return Optional.empty();
+        return new Result.Err<>(TodoError.NOT_FOUND);
     }
 
     @Override
-    public void insertTodo(Todo todo) throws TodoError {
+    public Result<Void> insertTodo(Todo todo) {
         lock.writeLock().lock();
         try {
             logger.log(Level.INFO, "Inserting todo {0}", todo);
@@ -98,26 +97,28 @@ public class TodoSqlite implements AutoCloseable, TodoRepository {
                 throw new SQLException("Failed to insert todo");
             }
         } catch (SQLException e) {
-            throw new TodoError.SystemError("Failed to insert todo", e);
+            return new Result.Err<>(TodoError.SYSTEM_ERROR);
         } finally {
             lock.writeLock().unlock();
         }
+        return Result.Ok.empty();
     }
 
     @Override
-    public void deleteTodoById(String id) throws TodoError {
+    public Result<Void> deleteTodoById(String id) {
         lock.writeLock().lock();
         try {
             logger.log(Level.INFO, "Deleting todo by id {0}", id);
             stmtDeleteTodoById.setString(1, id);
             int rows = stmtDeleteTodoById.executeUpdate();
             if (rows != 1) {
-                throw new TodoError.NotFound(String.format("Todo with id %s not found", id));
+                return new Result.Err<>(TodoError.NOT_FOUND);
             }
         } catch (SQLException e) {
-            throw new TodoError.SystemError("Failed to delete todo", e);
+            return new Result.Err<>(TodoError.SYSTEM_ERROR);
         } finally {
             lock.writeLock().unlock();
         }
+        return Result.Ok.empty();
     }
 }

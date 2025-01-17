@@ -1,47 +1,23 @@
 package com.github.vrnvu.todos;
 
-public sealed abstract class TodoError extends Exception permits
-    TodoError.NotFound,
-    TodoError.SystemError,
-    TodoError.BadRequest {
+public enum TodoError {
+    NOT_FOUND(404, "Resource not found"),
+    SYSTEM_ERROR(500, "Internal system error"),
+    BAD_REQUEST(400, "Bad request parameters");
 
-    public enum Type {
-        NOT_FOUND,
-        SYSTEM_ERROR,
-        BAD_REQUEST
+    private final int code;
+    private final String message;
+
+    TodoError(int code, String message) {
+        this.code = code;
+        this.message = message;
     }
 
-    private final Type type;
-
-    protected TodoError(String message, Type type) {
-        super(message);
-        this.type = type;
-    }
-    
-    protected TodoError(String message, Throwable cause, Type type) {
-        super(message, cause);
-        this.type = type;
+    public int getCode() {
+        return code;
     }
 
-    public Type getType() {
-        return type;
-    }
-
-    public static final class NotFound extends TodoError {
-        public NotFound(String message) {
-            super(message, Type.NOT_FOUND);
-        }
-    }
-    
-    public static final class SystemError extends TodoError {
-        public SystemError(String message, Throwable cause) {
-            super(message, cause, Type.SYSTEM_ERROR);
-        }
-    }
-
-    public static final class BadRequest extends TodoError {
-        public BadRequest() {
-            super("", Type.BAD_REQUEST);
-        }
+    public String getMessage() {
+        return message;
     }
 }
