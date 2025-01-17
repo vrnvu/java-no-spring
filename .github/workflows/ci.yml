@@ -28,6 +28,7 @@ jobs:
               with:
                 distribution: 'corretto'
                 java-version: '21'
+                cache: 'maven'
 
             - name: Run tests
               run: mvn clean test
@@ -35,6 +36,9 @@ jobs:
     integration-test:
         name: integration-test
         runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: java-no-spring
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
@@ -44,6 +48,7 @@ jobs:
               with:
                 distribution: 'corretto'
                 java-version: '21'
+                cache: 'maven'
 
             - name: Start Java server
               run: mvn clean compile exec:java -Dexec.mainClass="com.github.vrnvu.App" &
@@ -52,15 +57,14 @@ jobs:
 
             - name: Wait for server to start
               run: |
+                sleep 5
                 until curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/todos | grep -q "200"; do
                   echo "Waiting for server..."
                   sleep 1
                 done
 
             - name: Run integration tests
-              run: |
-                sleep 2 
-                ../scripts/integration-test.sh
+              run: ../scripts/integration-test.sh
               env:
                 ENV: dev
 
