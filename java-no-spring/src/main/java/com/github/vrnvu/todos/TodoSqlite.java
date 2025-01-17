@@ -74,8 +74,13 @@ public class TodoSqlite implements AutoCloseable, TodoRepository {
     public Result<Todo> getTodoById(String id) {
         lock.readLock().lock();
         logger.log(Level.INFO, "Getting todo by id {0}", id);
-        try (var resultSet = stmtGetTodoById.executeQuery()) {
+        try {
             stmtGetTodoById.setString(1, id);
+        } catch (SQLException e) {
+            return new Result.Err<>(TodoError.SYSTEM_ERROR);
+        }
+
+        try (var resultSet = stmtGetTodoById.executeQuery()) {
             if (resultSet.next()) {
                 return new Result.Ok<>(new Todo(
                     resultSet.getString("id"),
