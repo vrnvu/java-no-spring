@@ -5,7 +5,7 @@
 
 # Set the base URL based on the environment
 case "$ENV" in
-  dev)  BASE_URL="localhost:8080" ;;
+  dev)  BASE_URL="http://localhost:8080" ;;
   pre)  BASE_URL="http://pre.example.com" ;;
   pro)  BASE_URL="http://pro.example.com" ;;
   *)    echo "Invalid ENV value. Must be 'dev', 'pre', or 'pro'." && exit 1 ;;
