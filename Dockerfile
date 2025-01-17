@@ -2,8 +2,8 @@ FROM maven:3.9.4-amazoncorretto-21 AS build
 
 WORKDIR /app
 
-COPY pom.xml .
-COPY src ./src
+COPY java-no-spring/pom.xml .
+COPY java-no-spring/src ./src
 
 RUN mvn clean package
 
