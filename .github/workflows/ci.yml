@@ -51,15 +51,37 @@ jobs:
                 cache: 'maven'
 
             - name: Start Java server
-              run: mvn clean compile exec:java -Dexec.mainClass="com.github.vrnvu.App" &
+              run: |
+                echo "Starting server..."
+                mvn clean compile exec:java -Dexec.mainClass="com.github.vrnvu.App" > server.log 2>&1 &
+                server_pid=$!
+                echo $server_pid > server.pid
+                echo "Server started with PID: $server_pid"
+                sleep 2
+                if ! ps -p $server_pid > /dev/null; then
+                    echo "Server failed to start! Logs:"
+                    cat server.log
+                    exit 1
+                fi
+                echo "Server process is running"
               env:
                 PORT: 8080
 
             - name: Wait for server to start
               run: |
-                sleep 5
+                echo "Checking server status..."
+                ps aux | grep java
+                echo "Server logs:"
+                cat server.log
+                echo "Testing connection:"
+                curl -v http://localhost:8080/todos || true
                 until curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/todos | grep -q "200"; do
                   echo "Waiting for server..."
+                  if ! ps -p $(cat server.pid) > /dev/null; then
+                    echo "Server process died! Logs:"
+                    cat server.log
+                    exit 1
+                  fi
                   sleep 1
                 done
 
