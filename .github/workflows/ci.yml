@@ -13,21 +13,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build Docker image
-        run: docker build -t my-app-image -f path/to/Dockerfile .
+        run: docker build -t my-app-image -f Dockerfile .
       - name: Run tests in Docker container
         run: docker run --rm my-app-image mvn clean test
 
   integration-test:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Build Docker image
-        run: docker build -t my-app-image -f path/to/Dockerfile .
+        run: docker build -t my-app-image -f Dockerfile .
       - name: Start server in Docker container
         run: |
           docker run -d --name my-app-container -p 8080:8080 my-app-image
           for i in {1..30}; do
-            if curl -s http://localhost:8080/todos; then
+            if curl -s http://localhost:8080/todos > /dev/null; then
               echo "Server is ready"
               exit 0
             fi
@@ -38,7 +39,7 @@ jobs:
           docker logs my-app-container
           exit 1
       - name: Run integration tests
-        run: docker exec my-app-container ../scripts/integration-test.sh
+        run: docker exec my-app-container /scripts/integration-test.sh
         env:
           ENV: dev
       - name: Cleanup
