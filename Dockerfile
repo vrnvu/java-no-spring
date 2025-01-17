@@ -1,22 +1,20 @@
-FROM eclipse-temurin:21-jdk
+FROM maven:3.9.4-amazoncorretto-21 AS build
 
 WORKDIR /app
 
-# Copy the Maven files first for better layer caching
-COPY java-no-spring/pom.xml .
-COPY java-no-spring/.mvn .mvn
-COPY java-no-spring/mvnw .
+COPY pom.xml .
+COPY src ./src
 
-# Copy source code
-COPY java-no-spring/src src
+RUN mvn clean package
 
-# Create scripts directory and copy integration test
-RUN mkdir -p /app/scripts
+FROM amazoncorretto:21
+
+WORKDIR /app
+
+COPY --from=build /app/target/*.jar app.jar
 COPY scripts/integration-test.sh /app/scripts/
 RUN chmod +x /app/scripts/integration-test.sh
 
-# Build the application
-RUN ./mvnw clean package
+EXPOSE 8080
 
-# Run the application
-CMD ["java", "-jar", "target/java-no-spring-1.0-SNAPSHOT.jar"]
+CMD ["java", "-jar", "app.jar"]
