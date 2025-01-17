@@ -35,9 +35,6 @@ jobs:
     integration-test:
         name: integration-test
         runs-on: ubuntu-latest
-        defaults:
-            run:
-                working-directory: java-no-spring
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
@@ -61,7 +58,7 @@ jobs:
                 done
 
             - name: Run integration tests
-              run: ./scripts/integration-test.sh
+              run: ../scripts/integration-test.sh
               env:
                 ENV: dev
 
